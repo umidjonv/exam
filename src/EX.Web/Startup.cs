@@ -10,8 +10,11 @@ using EX.Web.Helpers;
 using EX.Web.Jobs;
 using EX.Web.Services;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -108,86 +111,36 @@ namespace EX.Web
                 opts.ResourcesPath = "Resources";
             })
             .AddDataAnnotationsLocalization();
-            //services.AddAuthentication(options =>
-            //    {
-            //        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            //        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            //    })
-            //    .AddCookie(options =>
-            //    {
-            //        options.SlidingExpiration = true;
-            //        options.LoginPath = "/signin";
-            //        options.LogoutPath = "/signout";
-            //        options.AccessDeniedPath = "/error";
 
-            //        options.Events = new CookieAuthenticationEvents
-            //        {
-            //            OnValidatePrincipal = async context =>
-            //            {
+            // Configure Bearer Authentication with no expiration
+            var jwtSecretKey = Configuration["Jwt:SecretKey"];
+            var jwtIssuer = Configuration["Jwt:Issuer"];
+            var jwtAudience = Configuration["Jwt:Audience"];
 
-            //                #region Refresh tokens
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = false, // Disable token expiration validation
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey))
+                };
+            });
 
-            //                var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            //                var exp = context.Properties.ExpiresUtc.GetValueOrDefault().ToUnixTimeSeconds();
-
-            //                if (now >= exp)
-            //                {
-            //                    var service = context.HttpContext.RequestServices
-            //                        .GetRequiredService<IdentityService>();
-            //                    var refreshToken =
-            //                        ((ClaimsIdentity)context.Principal.Identity).GetClaimValue(ClaimType
-            //                            .RefreshToken);
-            //                    var response = await service.GetToken(refreshToken).ConfigureAwait(false);
-
-            //                    ((ClaimsIdentity)context.Principal.Identity).SetIdentityClaims(
-            //                        response.AccessToken, response.RefreshToken);
-            //                    context.ShouldRenew = true;
-            //                }
-
-            //                #endregion
-
-            //            }
-            //        };
-            //    })
-            //    .AddOpenIdConnect(options =>
-            //    {
-            //        options.Authority = $"{config.TokenUrl}/auth/realms/{config.Realm}";
-            //        options.ClientId = config.ClientId;
-            //        options.ClientSecret = config.ClientSecret;
-            //        options.RequireHttpsMetadata = false;
-            //        options.SaveTokens = true;
-            //        options.GetClaimsFromUserInfoEndpoint = false;
-            //        options.ResponseType = OpenIdConnectResponseType.Code;
-
-            //        options.Events = new OpenIdConnectEvents
-            //        { 
-            //            OnTokenValidated = async context =>
-            //            {
-            //                #region Store tokens
-
-            //                ((ClaimsIdentity)context.Principal.Identity).SetIdentityClaims(
-            //                context.TokenEndpointResponse.AccessToken,
-            //                context.TokenEndpointResponse.RefreshToken);
-            //                context.Properties.ExpiresUtc =
-            //                    new JwtSecurityToken(context.TokenEndpointResponse.AccessToken).ValidTo;
-            //                context.Properties.IsPersistent = true;
-
-            //                #endregion
-
-            //                var userId = context.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            //                var ip = $"{context.HttpContext.Connection.RemoteIpAddress}";
-            //                var agent = context.HttpContext.Request.Headers["User-Agent"];
-            //                var service = context.HttpContext.RequestServices.GetRequiredService<ExamService>();
-
-            //                await service.AddUserSession(userId, ip, agent);
-            //            }
-            //        };
-            //    });
-            //services.AddAuthorization(options =>
-            //{
-            //    options.AddPolicy(AuthConst.AdminPolicy, builder => builder.RequireClaim(AuthConst.UserClaim, AuthConst.AdminRole).RequireAuthenticatedUser());
-            //    options.AddPolicy(AuthConst.ClientPolicy, builder => builder.RequireAssertion(context => context.User.FindFirstValue(AuthConst.UserClaim) != AuthConst.AdminRole).RequireAuthenticatedUser());
-            //});
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(AuthConst.AdminPolicy, builder => builder.RequireClaim(AuthConst.UserClaim, AuthConst.AdminRole).RequireAuthenticatedUser());
+                options.AddPolicy(AuthConst.ClientPolicy, builder => builder.RequireAssertion(context => context.User.FindFirstValue(AuthConst.UserClaim) != AuthConst.AdminRole).RequireAuthenticatedUser());
+            });
 
             services.AddCors(options =>
             {

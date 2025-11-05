@@ -1,0 +1,67 @@
+﻿@model IPagedList<Document>
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = @Localizer["PageTitle"];
+}
+
+<div class="test-table">
+    <div class="dash-card">
+        <div class="test-table__header">
+            <div>
+                <a asp-action="Form" class="btn btn-success">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                    @Localizer["CreateNew"]
+                </a>
+            </div>
+            <div class="test-table__header__pagination">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+            </div>
+        </div>
+        <div class="scroll">
+            <table id="example" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">
+                            @Localizer["Title"]
+                        </th>
+                        <th scope="col" width="30%">
+                            @Localizer["Date"]
+                        </th>
+                        <th scope="col" width="10%"></th>
+                        <th scope="col" width="10%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Title)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ModifiedDate)
+                            </td>
+                            <td align="center">
+                                <a asp-action="Form" class="btn btn-info" data-toggle="tooltip" title="@Localizer["Edit"]" asp-route-id="@item.Id">
+                                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                </a>
+                            </td>
+                            <td align="center">
+                                <form asp-action="Delete" asp-route-id="@item.Id">
+                                    <button class="btn btn-danger" type="submit" data-toggle="tooltip" title="@Localizer["Delete"]" onclick="return deleteConfirm(this)">
+                                        <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> 

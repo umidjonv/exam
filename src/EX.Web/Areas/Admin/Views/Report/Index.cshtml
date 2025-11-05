@@ -1,0 +1,124 @@
+﻿@using EX.Common.Consts
+@model PagerUserViewModel<ExamResult>
+@inject IViewLocalizer Localizer
+@inject AppConfig Config
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+
+<div class="test-table">
+    <div class="dash-card">
+        <div class="test-table__header">
+            <button type="button" class="btn btn-warning" onclick="tableToExcel(this,'#example','@ViewData["Title"]')">
+                <span class="icon icon-word"></span>
+                Экспорт в Excel
+            </button>
+            <div class="test-table__header__pagination">
+                @Html.PagedListPager(Model.Items, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+            </div>
+        </div>
+        <div class="scroll">
+            <table id="example" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>
+                            @Localizer["Code"]
+                        </th>
+                        <th>
+                            @Localizer["Mode"]
+                        </th>
+                        <th>
+                            @Localizer["StartDate"]
+                        </th>
+                        <th>
+                            @Localizer["MemberName"]
+                        </th>
+                        <th>
+                            @Localizer["MemberPassport"]
+                        </th>
+                        <th>
+                            @Localizer["Status"]
+                        </th>
+                        <th>
+                            @Localizer["MemberPhone"]
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        var user = Model.Users[item.UserId];
+                        var rowClass = item.Status switch
+                        {
+                            ResultStatus.Active => "table-primary",
+                            ResultStatus.Error => "table-warning",
+                            ResultStatus.Failed => "table-danger",
+                            ResultStatus.Pass => "table-success",
+                            _ => "table"
+                        };
+
+                        <tr class="@rowClass">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Exam.Code)
+                            </td>
+                            <td>
+                                @Localizer[item.Schedule.Mode.ToString()]
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Schedule.StartDate)
+                            </td>
+                            <td>
+                                <a href="@Config.AuthUrl/profile/@item.UserId" target="_blank">
+                                    @user.LastName @user.FirstName
+                                </a>
+                            </td>
+                            <td>
+                                @user.GetAttributeValue(UserPropertyConst.PASSPORT_NUMBER)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => @Localizer[item.Status.ToString()].Value)
+                            </td>
+                            <td align="center">
+                                @user.GetAttributeValue(UserPropertyConst.PHONE_NUMBER)
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/lib/tableExport/FileSaver.min.js"></script>
+    <script src="~/lib/tableExport/tableExport.min.js"></script>
+    <script>
+
+        function tableToExcel(element, table, name) {
+
+            $(element).attr('disabled', true);
+
+            setTimeout(() => {
+
+                $(table).tableExport({
+                    type: 'excel',
+                    excelstyles: ['border-bottom', 'border-top', 'border-left', 'border-right'],
+                    tableName: name,
+                    worksheetName: name,
+                    fileName: name + '-' + new Date().getTime()
+                });
+
+                $(element).attr('disabled', false);
+
+            }, 1000);
+
+        }
+
+    </script>
+}

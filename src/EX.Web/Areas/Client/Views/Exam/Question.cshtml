@@ -1,0 +1,188 @@
+﻿@model QuestionLocaleViewModel
+@inject IViewLocalizer Localizer
+@inject AppConfig Config
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+    ViewBag.HideMenuBar = true;
+    ViewBag.NoTitle = true;
+}
+@{
+    var questionNumber = ViewBag.questionNumber;
+    var answered = ViewBag.answered;
+}
+
+@section Styles
+{
+    <style type="text/css">
+        .question-active span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            min-height: 40px;
+            color: #FFF;
+            background-color: #F8A849 !important;
+            -webkit-border-radius: 12px;
+            -moz-border-radius: 12px;
+            -ms-border-radius: 12px;
+            -o-border-radius: 12px;
+            border-radius: 12px;
+        }
+    </style>
+
+}
+
+<div class="main-dash__body">
+    <div class="testing">
+        <form asp-action="save" id="question-id">
+            <input id="pageNumber" name="pageNumber" value="@questionNumber" type="hidden" />
+            <input id="nextPage" name="nextPage" type="hidden" />
+            <input id="prevPage" name="prevPage" value="@((int)questionNumber-1>0?(int)questionNumber-1:1)" type="hidden" />
+            <input id="isFinish" name="isFinish" type="hidden" />
+            <div class="dash-card">
+                <div class="testing__header">
+                    <button type="button" class="btn btn-success btn-rounded" id="backPage">@Localizer["Back"]</button>
+
+                    <strong><label id="exam-clock-label" class="font-weight-bold float-left"></label></strong>
+
+                    <button type="button" class="btn btn-danger btn-rounded" name="question-finish" onclick="javascript:void(0);"> @Localizer["Finish"]</button>
+                </div>
+            </div>
+            <div class="dash-card">
+                <div class="testing__body">
+                    <div class="testing__body__question">
+                        <span>@(questionNumber)</span>
+                        <strong>@Model.Title</strong>
+                    </div>
+                    <div class="testing__body__question">
+                        <strong>@Model.Description</strong>
+                    </div>
+                    <div class="testing__body__options">
+                        <ul style="list-style-type: lower-alpha">
+                            @foreach (var answer in Model.Answers)
+                            {
+                                <li>
+                                    <div class="form-group">
+                                        <label class="radio-custom">
+                                            <strong>@answer.Title</strong>
+                                            <input type="radio" name="answerId" id="answer@(answer.Id)" @(answered == answer.Id ? "checked" : "") value="@answer.Id">
+                                            <span class="checkmark"></span>
+                                        </label>
+                                    </div>
+                                </li>
+                            }
+
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-card mb-0">
+                <div class="testing__footer">
+
+                    <div class="pagination float-left">
+                        @Html.PagedListPager((IPagedList)ViewBag.pages, page => { return "javascript:void(0);"; }, new PagedListRenderOptions { ActiveLiElementClass = "question-active",ContainerDivClasses = new List<string>(){"float-left"}})
+                        <button type="submit" class="btn btn-success btn-rounded" style="margin-left: 50px;" @(ViewBag.isNext ? "disabled" : "")>@Localizer["Next"]</button>
+                    </div>
+                    <input type="hidden" name="pageNumber" value="@questionNumber" />
+                    
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts
+{
+    <script src="/lib/signalr/signalr.min.js"></script>
+    <script>
+
+        $(function() {
+            var answered = [@(string.Join(",", (IEnumerable<int>) ViewBag.answeredPages))];
+
+            $("ul.pagination li").each(function() {
+                if (!$(this).hasClass("PagedList-skipToPrevious") && !$(this).hasClass("PagedList-skipToNext")) {
+                    var number = $(this).children().text();
+                    number = parseInt(number);
+                    if (answered.includes(number)) {
+                        $(this).children().css("background-color", "#dddddd");
+                    }
+                }
+            });
+
+            $("#backPage").on("click",
+                () => {
+                    $("#nextPage").val($("#prevPage").val());
+                    $("#question-id").submit();
+
+                });
+            $("ul.pagination li a").on("click",
+                function() {
+                    var attrPrev = $(this).attr("rel");
+
+                    if (attrPrev == "prev") {
+                        $("#nextPage").val($("#prevPage").val());
+                    } else if ($(this).text() === "<<") {
+                        $("#nextPage").val(1);
+                    } else if ($(this).text() === ">>") {
+                        $("#nextPage").val(@(((IPagedList) ViewBag.pages).TotalItemCount));
+                    } else {
+                        $("#nextPage").val($(this).text());
+                    }
+
+                    $("#question-id").submit();
+
+                });
+
+            $('[name="question-finish"]').on("click",
+                function() {
+                    $("#isFinish").val(true);
+                    $("#question-id").submit();
+                });
+        });
+
+
+
+        @{
+            var endTime = ViewBag.finishDate != null ? (DateTime) ViewBag.finishDate : DateTime.UtcNow.AddMinutes(-1);
+            var nowTime = DateTime.UtcNow;
+        }
+
+        @if (nowTime < endTime)
+        {
+            <text>
+
+        var examTime = moment.utc("@endTime.ToString("dd:MM:yyyy HH:mm:ss")", "DD:MM:YYYY hh:mm:ss");
+        var connection = new signalR.HubConnectionBuilder()
+            .withUrl("@Config.ExamApi/hub/timer")
+            .build();
+
+        connection.on("time-now",
+            (time) => {
+
+                var dateNow = moment(time);
+
+                if (!dateNow.isBefore(examTime)) {
+                    setTimeout(function() {
+                        location.href = "/Client/Exam/Finish";
+                    });
+                    connection.close();
+                    return;
+                }
+
+                var duration = moment.duration(examTime.diff(dateNow));
+                var format = moment().startOf('day').seconds(duration.as("seconds")).format('H:mm:ss');
+
+                $('#exam-clock-label').text(format);
+            });
+        connection.start().catch(function(err) {
+            console.error(error);
+        });
+
+            </text>
+        }
+
+    </script>
+
+}

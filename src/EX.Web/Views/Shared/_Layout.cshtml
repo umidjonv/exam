@@ -1,0 +1,254 @@
+﻿@inject IViewLocalizer Localizer
+@inject AppConfig Config
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>@ViewData["Title"] - @Config.Title</title>
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/lib/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/lib/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/css/animate.css" rel="stylesheet" />
+    <link href="~/css/PagedList.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/site.css" rel="stylesheet" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    @{
+        @await RenderSectionAsync("Styles", required: false)
+    }
+
+    <script>
+        @{
+            var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+            var currentLang = requestCulture.RequestCulture.Culture.Name;
+         }
+        window.CURRENT_LANG = '@currentLang';
+    </script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+    <script src="~/lib/toastr/toastr.min.js"></script>
+    <script src="~/lib/moment/moment-with-locales.min.js"></script>
+    <script src="~/lib/moment/moment-timezone-with-data.min.js"></script>
+    <script src="~/js/main.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(function() {
+            var time = moment("@DateTime.Now.ToString("dd:MM:yyyy HH:mm:ss")", "DD:MM:YYYY hh:mm:ss").tz('Asia/Tashkent');
+            setInterval(function() {
+                    time = time.add(1, 'seconds');
+                    $('#clock-label').text(time.format('DD:MM:YYYY hh:mm:ss'));
+                },
+                1000);
+        });
+    </script>
+    
+    @if (!string.IsNullOrWhiteSpace($"{TempData["error"]}"))
+    {
+        <script>
+            $(function() {
+                toastr["error"]("@TempData["error"]");
+            });
+        </script>
+    }
+    
+    @if (!string.IsNullOrWhiteSpace($"{TempData["success"]}"))
+    {
+        <script>
+            $(function() {
+                toastr["success"]("@(TempData["success"])");
+            });
+        </script>
+    }
+    
+    @if (!string.IsNullOrWhiteSpace($"{TempData["warning"]}"))
+    {
+        <script>
+            $(function() {
+                toastr["warning"]("@(TempData["warning"])");
+            });
+        </script>
+    }
+    
+    <script>
+        function goSelector(selector) {
+            @if (ViewBag.ShowLanding == true)
+            {
+                <text>
+                    $('html, body').animate({
+                        scrollTop: $(selector).offset().top
+                    }, 1000);
+                </text>
+            }
+            else
+            {
+                @:location.href="/";
+            }
+        }
+        function goAnimate(event) {
+            @if (ViewBag.ShowLanding == true)
+            {
+                <text>
+                    var selector = $(event).attr("href");
+
+                    $('html, body').animate({
+                        scrollTop: $(selector).offset().top
+                    }, 1000);
+                </text>
+            }
+            else
+            {
+                <text>
+                    var selector = $(event).attr("href");
+
+                    location.href = "/home/index" + selector;
+                </text>
+            }
+        }
+    </script>
+    @{
+        @await RenderSectionAsync("Scripts", required: false)
+    }
+</head>
+<body>
+    <a id="back-to-top"></a>
+
+    <header class="header @(ViewBag.ShowDashboard != null ? "header-dash" : "")">
+
+        @if (ViewBag.ShowDashboard != null)
+        {
+            <div class="container-fluid">
+                <div class="header-dash__inner">
+                    <div class="header-dash__logos">
+                        <a href="/" class="logo">
+                            <img src="~/images/assets/logo-blue.svg" alt="Logo">
+                        </a>
+                        <a href="http://uzex.uz" target="_blank" class="logo-uzex">
+                            <img src="~/images/assets/logo-uzex.svg" alt="Uzex logo">
+                        </a>
+                    </div>
+                    <div class="header-dash__right">
+                        @(await Html.PartialAsync("_Language"))
+                        <div class="header-dash__buttons">
+                            <ul>
+                                <li>
+                                    <a href="@(Config.MailboxUrl)/mail" target="_blank" class="header-mail">
+                                        <img src="~/images/dash-header-buttons/2.svg" alt="">
+                                        <span class="animation">10</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="header__profile">
+                            <partial name="_LoginPartial" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="header__top">
+                <div class="container">
+                    <div class="header__top__inner">
+                        <div class="current-time">
+                            <span class="icon icon-clock"></span>
+                            <span id="clock-label">@DateTime.Now.ToString("dd:MM:yyyy HH:mm:ss")</span> <b style="margin-left: 5px;"> (GMT+5)</b>
+                        </div>
+                        <div class="top-buttons">
+                            @(await Html.PartialAsync("_Language"))
+                            @(await Html.PartialAsync("_LoginPartial"))
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header__bottom">
+                <div class="container">
+                    <div class="header__bottom__inner">
+                        <a href="#landing" onclick="goAnimate(this)" class="logo">
+                            <img src="~/images/assets/logo.svg" alt="Logo">
+                        </a>
+                        <a href="http://uzex.uz" target="_blank" class="logo-uzex">
+                            <img src="~/images/assets/logo-uzex-footer.svg" alt="Uzex logo">
+                        </a>
+                        <!-- Mobile menu -->
+                        <div class="header__mobile-menu-btn">
+                            <button type="button" class="btn btn-primary">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </button>
+                        </div>
+
+                        <nav class="menu">
+                            <ul>
+                                <li><a href="#about" onclick="goAnimate(this)">@Localizer["AboutExamMenu"]</a></li>
+                                <li><a href="#lessions" onclick="goAnimate(this)">@Localizer["TrainingVideosMenu"]</a></li>
+                                <li><a href="#slides" onclick="goAnimate(this)">@Localizer["PresentationsMenu"]</a></li>
+                                <li><a href="#docs" onclick="goAnimate(this)">@Localizer["DocumentsMenu"]</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile menu -->
+            <div class="header__mobile-menu">
+                <div class="header__mobile-languages">
+                    @(await Html.PartialAsync("_LanguageMobile"))
+                </div>
+                <div class="top-buttons">
+                    <button class="btn btn-success" type="button">Кириш</button>
+                    <button class="btn btn-danger" type="button">Рўйхатдан ўтиш</button>
+                </div>
+                <div class="mobile-menu-nav">
+                    <nav>
+                        <ul>
+                            <li><a href="#about" onclick="goAnimate(this)">@Localizer["AboutExamMenu"]</a></li>
+                            <li><a href="#lessions" onclick="goAnimate(this)">@Localizer["TrainingVideosMenu"]</a></li>
+                            <li><a href="#slides" onclick="goAnimate(this)">@Localizer["PresentationsMenu"]</a></li>
+                            <li><a href="#docs" onclick="goAnimate(this)">@Localizer["DocumentsMenu"]</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        }
+    </header>
+
+    <main class="main @(ViewBag.ShowDashboard != null ? "main-dash" : "")">
+        @RenderBody()
+    </main>
+
+    @if (ViewBag.ShowDashboard == null)
+    {
+        <footer class="footer">
+            <div class="container">
+                <div class="footer__inner">
+                    <div class="footer__logo">
+                        <img src="~/images/assets/logo.svg" alt="Logo">
+                    </div>
+                    <div class="footer__logo-uzex">
+                        <img src="~/images/assets/logo-uzex-footer.svg" alt="Logo Uzex">
+                    </div>
+                    <div class="socials">
+                        <ul>
+                            <li><a href="#"><span class="icon icon-facebook"></span></a></li>
+                            <li><a href="#"><span class="icon icon-telegram"></span></a></li>
+                            <li><a href="#"><span class="icon icon-twitter"></span></a></li>
+                            <li><a href="#"><span class="icon icon-instagram"></span></a></li>
+                        </ul>
+                    </div>
+                    <div class="copyright">
+                        <p>© Copyright 2020.<br>@Localizer["AllRightsReserved"]</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    }
+</body>
+</html>

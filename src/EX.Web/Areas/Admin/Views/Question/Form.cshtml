@@ -1,0 +1,159 @@
+﻿@model QuestionViewModel
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+    bool isHaveCategory = ViewBag.isHaveCategory ?? false;
+}
+<form asp-action="Form" id="question-form">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="CategoryId" class="control-label">@Localizer["Category"]</label>
+        @if (!isHaveCategory)
+        {
+            <select asp-for="CategoryId" asp-items="ViewBag.CategoryList" selected="@Model.CategoryId" class="form-control">
+                <option value="" disabled selected hidden>@Localizer["SelectCategory"]</option>
+            </select>
+        }
+        else
+        {
+            var selectedCategory = (ViewBag.CategoryList as SelectList).FirstOrDefault(x => x.Value == Model.CategoryId.ToString());
+            <input type="hidden" value="@Convert.ToInt32(selectedCategory.Value)" id="CategoryId" name="CategoryId" />
+            <input type="text" readonly="readonly" class="form-control" value="@selectedCategory.Text">
+        }
+
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+        @if (isHaveCategory)
+        {
+    <span class="text-warning">@Localizer["WarningMessage"]</span>
+        }
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Weight" class="control-label">@Localizer["Weight"]</label>
+        <input type="number" asp-for="Weight" min="1" value="1" required class="form-control" />
+        <span asp-validation-for="Weight" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check">
+        <input type="checkbox" value="true" class="form-check-input" asp-for="IsBase" />
+        <input type="hidden" value="false" asp-for="IsBase" />
+        <label asp-for="IsBase" class="form-check-label">@Localizer["IsBase"]</label>
+        <span asp-validation-for="IsBase" class="text-danger"></span>
+    </div>
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        @for (var i = 0; i < Model.Locales.Count; i++)
+        {
+            <li class="nav-item" role="presentation">
+                <a class="nav-link @(i == 0 ? "active" : "")" id="tab-uz" data-toggle="tab" href="#tabContent-@(@Model.Locales[i].CultureId)" role="tab">
+                    @Model.Locales[i].CultureName
+                </a>
+                <input type="hidden" asp-for="Locales[i].CultureId" />
+                <input type="hidden" asp-for="Locales[i].CultureName" />
+            </li>
+        }
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        @for (var i = 0; i < Model.Locales.Count; i++)
+        {
+            <div class="tab-pane fade @(i == 0 ? "show active" : "")" id="tabContent-@(@Model.Locales[i].CultureId)" role="tabpanel">
+                <input type="hidden" asp-for="Locales[i].Id" />
+                <div class="mt-3">
+                    <div class="form-group">
+                        <label asp-for="Locales[i].Title" class="control-label">@Localizer["Title"]</label>
+                        <textarea asp-for="Locales[i].Title" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Locales[i].Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Locales[i].Description" class="control-label">@Localizer["Description"]</label>
+                        <textarea asp-for="Locales[i].Description" class="form-control" rows="10"></textarea>
+                        <span asp-validation-for="Locales[i].Description" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <div class="form-group">
+                        <label asp-for="Locales[i].Answers" class="control-label">@Localizer["Answers"]</label>
+                        <table class="table text-center" id="table-answers@(i)">
+                            <thead>
+                                <tr>
+                                    <th scope="col" width="10%">@Localizer["Correct"]</th>
+                                    <th scope="col">@Localizer["Answer"]</th>
+                                    <th scope="col" width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var j = 0; j < Model.Locales[i].Answers.Count; j++)
+                                {
+
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" value="true" class="chbx-correct" asp-for="@Model.Locales[i].Answers[j].IsCorrect" />
+                                            <input type="hidden" value="false" asp-for="@Model.Locales[i].Answers[j].IsCorrect" />
+                                        </td>
+                                        <td>
+                                            <textarea asp-for="@Model.Locales[i].Answers[j].Title" class="form-control" rows="5"></textarea>
+                                        </td>
+                                        <th scope="row">
+                                            <input type="hidden" asp-for="@Model.Locales[i].Answers[j].Id" />
+                                            <button type="button" class="btn btn-danger" id="slice-item@(i)">
+                                                <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                            </button>
+                                        </th>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2">
+                                        <button type="button" id="add-item@(i)" class="btn btn-secondary btn-block">
+                                            <i class="fa fa-plus" aria-hidden="true"></i>
+                                            @Localizer["AddAnswer"]
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                        <script>
+                            $(document).ready(function () {
+
+                                $("#table-answers@(i)").on('click', '.chbx-correct', function (e) {
+
+                                    $('#table-answers@(i) .chbx-correct').not(this).prop('checked', false);
+                                });
+
+                                $("#add-item@(i)").on("click",function (e) {
+                                    var index = $("#table-answers@(i) tbody tr").length;
+                                    var row = "<tr>";
+
+                                    row += '<td><input type="checkbox" name="Locales[@i].Answers[' + index + '].IsCorrect" class="chbx-correct" value="true"/><input type="hidden" name="Locales[@i].Answers[' + index + '].IsCorrect" value="false"/> </td>';
+                                    row += '<td><textarea name="Locales[@i].Answers[' + index + '].Title"  class="form-control" rows="5" required></textarea></td>';
+                                    row += '<th scope="row"><button type="button" class="btn btn-danger" id="slice-item@(i)"><i class="fa fa-trash-o" aria-hidden="true"></i></button></th>';
+
+                                    row+= "</tr>";
+
+                                    $("#table-answers@(i)").append(row);
+                                });
+
+                                $("#table-answers@(i)").on("click", "#slice-item@(i)", function (e) {
+
+                                    $(this).closest("tr").remove();
+                                });
+
+                            });
+                        </script>
+                        <span asp-validation-for="Locales[i].Answers" class="text-danger"></span>
+                    </div>
+                </div>
+
+            </div>
+        }
+    </div>
+
+    <div class="form-group text-center">
+        <input type="submit" value="@Localizer["Save"]" class="btn btn-primary btn-lg" />
+    </div>
+</form> 

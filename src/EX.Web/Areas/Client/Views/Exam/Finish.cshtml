@@ -1,0 +1,47 @@
+﻿@model ExamProgressReport
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+    ViewBag.HideMenuBar = true;
+    ViewBag.NoTitle = true;
+}
+
+<div class="test-start-end">
+    <div class="dash-card mb-0">
+        <p style="text-align: center">
+            <strong>@Localizer["PageTitle"]</strong>
+        </p>
+        <p style="text-align: center">@Model.ResultMessage</p>
+        <div class="test-results">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="correct"></span>@Localizer["CorrectAnswers"]
+                        </td>
+                        <td>
+                            <strong>@Model.CorrectSelectedAnswersCount</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="incorrect"></span>@Localizer["IncorrectAnswers"]
+                        </td>
+                        <td>
+                            <strong>@Model.IncorrectSelectedAnswersCount</strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>@Localizer["ExamPass"]</td>
+                        <td>
+                            <strong>@(Model.Status == ResultStatus.Pass ? Localizer["Yes"] : Localizer["No"])</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="text-align: center">
+            <a class="btn btn-info btn-rounded" href="@Url.Action("Index")">@Localizer["Close"]</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,108 @@
+﻿@model IPagedList<ExamResult>
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+
+<div class="test-table">
+    <div class="dash-card">
+        <div class="test-table__header">
+            <div>
+            </div>
+            <div class="test-table__header__pagination">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+            </div>
+        </div>
+        <div class="scroll">
+            <table id="example" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>
+                            @Localizer["Title"]
+                        </th>
+                        <th>
+                            @Localizer["Code"]
+                        </th>
+                        <th>
+                            @Localizer["Mode"]
+                        </th>
+                        <th>
+                            @Localizer["StartDate"]
+                        </th>
+                        <th>
+                            @Localizer["Status"]
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+
+                        var rowClass = "";
+
+                        rowClass = item.Status switch
+                        {
+                            ResultStatus.Active => "table-primary",
+                            ResultStatus.Error => "table-warning",
+                            ResultStatus.Failed => "table-active",
+                            ResultStatus.NotStarted => "table-success",
+                            ResultStatus.Pass => "table-success",
+                            _ => rowClass
+                        };
+
+                        <tr class="@rowClass">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Exam.Title)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Exam.Code)
+                            </td>
+                            <td>
+                                @Localizer[item.Schedule.Mode.ToString()]
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Schedule.StartDate)
+                            </td>
+                            <td>
+                                @if (item.IsAccepted != null)
+                                {
+                                    if (item.IsAccepted == true)
+                                    {
+                                        <span class="text-success">@Localizer["ExamPassed"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger">@Localizer["ExamNotPassed"]</span>
+                                    }
+                                    if (item.Schedule.Mode == ExamMode.Online)
+                                    {
+                                        <span>
+                                            (@Html.DisplayFor(modelItem => item.StatusReason))
+                                        </span>
+                                    }
+
+                                }
+                                else
+                                {
+                                    if (item.Schedule.Mode != ExamMode.Online)
+                                    {
+                                        <span class="text-danger">@Localizer["ExamError"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-primary">@Localizer["WaitingModerator"]</span>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

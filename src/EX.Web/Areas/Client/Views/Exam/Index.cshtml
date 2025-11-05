@@ -1,0 +1,245 @@
+﻿@model ExamListingViewModel
+@inject AppConfig Config
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+
+<div class="test-table">
+    <div class="dash-card">
+       
+        <div class="test-table__header">
+            <div>
+                <form class="form-inline" method="get" asp-controller="Exam" asp-action="Index">
+                    <div class="form-group mb-2 mr-2">
+                        <select class="form-control" name="region" asp-items="@Model.Regions">
+                            <option selected>@Localizer["SelectRegion"]</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success mb-2">
+                        <i class="fa fa-filter" aria-hidden="true"></i>  @Localizer["Filter"]
+                    </button>
+                </form>
+            </div>
+                <label id="exam-clock-label" class="font-weight-bold"></label>
+            <div class="test-table__header__pagination">
+                @Html.PagedListPager(Model.Items, page => Url.Action("Index", new {page}), new PagedListRenderOptions { LiElementClasses = new[] {"page-item"}, PageClasses = new[] {"page-link"}, Display = PagedListDisplayMode.IfNeeded })
+            </div>
+        </div>
+        <div class="scroll">
+            <table id="example" class="table">
+                <thead class="thead-dark">
+                <tr>
+                    <th>
+                        @Localizer["Regime"] 
+                    </th>
+                    <th>
+                        @Localizer["Code"]
+
+                    </th>
+                    <th>
+                        @Localizer["Name"]
+
+                    </th>
+                    <th>
+                        @Localizer["StartDate"]
+
+                    </th>
+                    <th>
+                        @Localizer["Participants"]
+                    </th>
+                    <th>
+                        @Localizer["Status"]
+                    </th>
+                    <th> </th>
+                </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var isPending = false;
+
+                        foreach (var schedule in Model.Items)
+                        {
+                            var rowClass = "";
+                            var request = schedule.Users.FirstOrDefault(a => a.UserId == Model.UserId);
+
+                            switch (schedule.Status)
+                            {
+                                case ScheduleStatus.New:
+
+
+                                    rowClass = "table-primary";
+                                    break;
+                                case ScheduleStatus.Pending:
+
+                                    rowClass = "table-warning";
+                                    break;
+                                case ScheduleStatus.Active:
+
+                                    rowClass = "table-active";
+                                    break;
+                                case ScheduleStatus.Finished:
+                                    rowClass = "table-success";
+                                    break;
+                            }
+
+                            <tr class="@rowClass">
+                                <td>
+                                    @Html.DisplayFor(modelItem => schedule.Mode)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => schedule.Exam.Code)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => schedule.Exam.Title)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => schedule.StartDate)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => schedule.LimitOfParticipants) / @(schedule.Users.Where(x=>x.IsPassed !=true)?.Count())
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => schedule.Status)
+                                </td>
+                                <td>
+
+                                    @{
+                                        switch (schedule.Status)
+                                        {
+                                            case ScheduleStatus.New:
+
+                                            case ScheduleStatus.Pending:
+                                                if (request == null)
+                                                {
+                                                    <form asp-action="Request" asp-route-id="@schedule.Id" asp-antiforgery="true" data-container="body">
+                                                        <button class="btn btn-success" type="submit" name="request">
+                                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                                            @Localizer["Participate"]
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else
+                                                {
+                                                    <form asp-action="DisEnroll" asp-route-id="@schedule.Id" asp-antiforgery="true" data-container="body">
+                                                        <button class="btn btn-success" type="submit" name="request">
+                                                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                                                            @Localizer["CancelExam"]
+                                                        </button>
+                                                    </form>
+                                                    <p>
+                                                        @Localizer["RequestTime"]
+                                                        <strong class="text-danger">
+                                                            @request.RequestTime.Humanize(false, culture: CultureInfo.GetCultureInfo("ru"))
+                                                        </strong>
+                                                    </p>
+                                                }
+
+                                                break;
+                                            case ScheduleStatus.Active:
+                                                if (request != null && request.IsPassed != true)
+                                                {
+                                                    isPending = true;
+
+                                                    if (Model.ScheduleId != schedule.Id)
+                                                    {
+
+                                                        <form asp-action="Welcome" asp-route-id="@schedule.ExamId" asp-route-scheduleId="@schedule.Id">
+                                                            <button class="btn btn-primary" type="submit" @(schedule.Status != ScheduleStatus.Active || schedule.Mode == ExamMode.Online ? "disabled" : "") name="start">
+                                                                <i class="fa fa-play" aria-hidden="true"></i>
+                                                                @Localizer["Start"]
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                    else if (Model.ScheduleId == schedule.Id)
+                                                    {
+                                                        <form asp-action="Question" asp-route-id="@Model.CurrentPosition" asp-antiforgery="true">
+                                                            <button class="btn btn-primary" type="submit" name="start">
+                                                                <i class="fa fa-play" aria-hidden="true"></i>
+                                                                @Localizer["Continue"]
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                }
+                                                else if (request != null && request.IsPassed == true)
+                                                {
+                                                    <p>
+                                                        @Localizer["ExamPassed"]
+                                                    </p>
+                                                }
+
+                                                break;
+                                            case ScheduleStatus.Finished:
+
+                                                break;
+                                        }
+                                    }
+
+                                </td>
+                            </tr>
+
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+  
+@section Scripts{
+    <script src="/lib/moment/moment-with-locales.min.js"></script>
+    <script src="/lib/moment/moment-timezone-with-data.min.js"></script>
+    <script src="/lib/signalr/signalr.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+
+            @if (isPending)
+            {
+                <text>
+                    $('[name="request"]').addClass("disabled");
+                    $('[name="request"]').attr("disabled", "disabled");
+                </text>
+            }
+
+        });
+
+        @{
+            var firstSchedule = Model.Items.Where(x => x.StartDate.ToUniversalTime() > DateTime.UtcNow).OrderBy(x => x.StartDate).FirstOrDefault();
+            var startTime = firstSchedule?.StartDate.ToUniversalTime() ?? DateTime.Now.ToUniversalTime().AddMinutes(-1) ;
+            var currentTime = DateTime.UtcNow;
+        }
+
+        @if (startTime > currentTime)
+        {
+            <text>
+            var examTime = moment.utc("@startTime.ToString("dd:MM:yyyy HH:mm:ss")", "DD:MM:YYYY hh:mm:ss");
+            var connection = new signalR.HubConnectionBuilder()
+                .withUrl("@Config.ExamApi/hub/timer")
+                .build();
+
+            connection.on("time-now", (time) => {
+
+                var nowTime = moment.utc(time);
+                if (!nowTime.isBefore(examTime)) {
+
+                    location.reload();
+                    connection.close();
+
+                }
+
+                var duration = moment.duration(examTime.diff(nowTime));
+                var format = moment().startOf('day').seconds(duration.as("seconds")).format('H:mm:ss');
+
+                $('#exam-clock-label').text("@Localizer["UntilNextExam"] " + format );
+
+            });
+            connection.start().catch(function(err) {
+                console.error(err);
+            });
+            </text>
+        }
+
+
+    </script>
+}

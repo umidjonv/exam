@@ -1,0 +1,52 @@
+﻿@inject IViewLocalizer Localizer
+@{
+    var controllerName = (string)ViewContext.RouteData.Values["controller"];
+}
+<div class="main-dash__left">
+    <div class="dash-menu">
+        <ul>
+            <li class="@(controllerName == "Result" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Result">
+                    <img src="~/images/dash-menu-icons/results.svg" alt="">
+                    <strong>@Localizer["ResultMenu"]</strong>
+                </a>
+            </li>
+            <li class="@(controllerName=="Report"?"active":"")">
+                <a asp-action="Index" asp-controller="Report">
+                    <img src="~/images/dash-menu-icons/reports.svg" alt="">
+                    <strong>@Localizer["ReportMenu"]</strong>
+                </a>
+            </li>
+            <li class="@(controllerName == "Category" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Category">
+                    <img src="~/images/dash-menu-icons/category.svg" alt="">
+                    <strong>@Localizer["CategoryMenu"]</strong>
+                </a>
+            </li>
+            <li class="@(controllerName == "Question" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Question">
+                    <img src="~/images/dash-menu-icons/question.svg" alt="">
+                    <strong>@Localizer["QuestionMenu"]</strong>
+                </a>
+            </li>
+            <li class="@(controllerName == "Exam" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Exam">
+                    <img src="~/images/dash-menu-icons/settings.svg" alt="">
+                    <strong>@Localizer["ExamMenu"]</strong>
+                </a>
+            </li>
+            <li class="@(controllerName == "Schedule" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Schedule">
+                    <img src="~/images/dash-menu-icons/schedule.svg" alt="">
+                    <strong>@Localizer["ScheduleMenu"]<span></span></strong>
+                </a>
+            </li>
+            <li class="@(controllerName == "Document" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Document">
+                    <img src="~/images/dash-menu-icons/file.svg" alt="">
+                    <strong>@Localizer["Documents"]</strong>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

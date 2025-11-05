@@ -1,0 +1,22 @@
+﻿@inject IViewLocalizer Localizer
+@{
+    var controllerName = (string)ViewContext.RouteData.Values["controller"];
+}
+<div class="main-dash__left">
+    <div class="dash-menu">
+        <ul>
+            <li class="@(controllerName=="Exam"?"active":"")">
+                <a asp-action="Index" asp-controller="Exam">
+                    <img src="~/images/dash-menu-icons/settings.svg" alt="">
+                    <strong>@Localizer["Exams"]</strong>
+                </a>
+            </li>
+            <li class="@(controllerName == "Result" ? "active" : "")">
+                <a asp-action="Index" asp-controller="Result">
+                    <img src="~/images/dash-menu-icons/results.svg" alt="">
+                    <strong>@Localizer["Results"]</strong>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

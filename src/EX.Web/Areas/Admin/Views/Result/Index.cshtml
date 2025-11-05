@@ -1,0 +1,176 @@
+﻿@model PagerUserViewModel<ExamResult>
+@inject IViewLocalizer Localizer
+@inject AppConfig Config
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+
+<div class="test-table">
+    <div class="dash-card">
+        <div class="test-table__header">
+            <div> 
+                <button type="button" class="btn btn-warning" onclick="tableToExcel(this,'#example','@ViewData["Title"]')">
+                    <span class="icon icon-word"></span>
+                    Экспорт в Excel
+                </button>
+            </div>
+            <div class="test-table__header__pagination">
+                @Html.PagedListPager(Model.Items, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+            </div>
+        </div>
+        <div class="scroll">
+            <table id="example" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>
+                            @Localizer["Code"]
+                        </th>
+                        <th>
+                            @Localizer["Title"]
+                        </th>
+                        <th>
+                            @Localizer["Mode"]
+                        </th>
+                        <th>
+                            @Localizer["StartDate"]
+                        </th>
+                        <th>
+                            @Localizer["MemberName"]
+                        </th>
+                        <th>
+                            @Localizer["PassStatus"]
+                        </th>
+                        <th>
+                            @Localizer["IsFinished"]
+                        </th>
+                        <th>
+                            @Localizer["ErrorMessage"]
+                        </th>
+                        <th>
+                            @Localizer["Report"]
+                        </th>
+                        <th>
+                            @Localizer["Moderate"]
+                        </th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        var user = Model.Users[item.UserId];
+                        var rowClass = item.Status switch
+                        {
+                            ResultStatus.Active => "table-primary",
+                            ResultStatus.Error => "table-warning",
+                            ResultStatus.Failed => "table-danger",
+                            ResultStatus.Pass => "table-success",
+                            _ => "table"
+                        };
+
+                        <tr class="@rowClass">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Exam.Code)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Exam.Title)
+                            </td>
+                            <td>
+                                @Localizer[item.Schedule.Mode.ToString()]
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Schedule.StartDate)
+                            </td>
+                            <td>
+                                <a href="@Config.AuthUrl/Profile/@item.UserId" target="_blank">
+                                    @user.LastName @user.FirstName
+                                </a>
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => Localizer[$"{item.Status}"].Value)
+                            </td>
+                            <td>
+                                @(item.FinishTime != null ? @Localizer["Finished"] : @Localizer["NotFinished"])
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ErrorMessage)
+                            </td>
+                            <td>
+                                @{
+                                    var countCorrects = item.Units.Sum(answered => answered.Answer?.Corrects.Count);
+                                }
+
+                                @($"{countCorrects}/{item.Exam.PassingScore}")
+                            </td>
+                            <td>
+                                @if (item.Schedule.Mode == ExamMode.Online)
+                                {
+                                    if (item.IsAccepted != null)
+                                    {
+                                        if (item.IsAccepted == true)
+                                        {
+                                            <span class="text-success">@Localizer["Accepted"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-danger">@Localizer["Rejected"]</span>
+                                        }
+                                        <span>
+                                            (@Html.DisplayFor(modelItem => item.StatusReason))
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-primary">@Localizer["WaitingModerator"]</span>
+                                    }
+                                }
+                            </td>
+                            <td align="center">
+                                @if (item.Schedule.Mode == ExamMode.Online)
+                                { 
+                                    <a asp-action="Form" class="btn btn-info" data-toggle="tooltip" title="@Localizer["Edit"]" asp-route-id="@item.Id">
+                                        <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="~/lib/tableExport/FileSaver.min.js"></script>
+    <script src="~/lib/tableExport/tableExport.min.js"></script>
+    <script>
+        
+        function tableToExcel(element, table, name) {
+
+            $(element).attr('disabled', true);
+
+            setTimeout(() => {
+
+                $(table).tableExport({
+                    type: 'excel',
+                    excelstyles: ['border-bottom', 'border-top', 'border-left', 'border-right'],
+                    tableName: name,
+                    worksheetName: name,
+                    fileName: name + '-' + new Date().getTime()
+                });
+
+                $(element).attr('disabled', false);
+
+            }, 1000);
+
+        }
+
+    </script>
+}

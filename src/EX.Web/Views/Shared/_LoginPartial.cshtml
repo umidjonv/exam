@@ -1,0 +1,40 @@
+﻿@inject IViewLocalizer Localizer
+@inject AppConfig Config
+@{
+    var hostUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/signout";
+}
+@if (User.Identity.IsAuthenticated)
+{
+    @if (ViewBag.ShowDashboard != null)
+    {
+        <a href="@(Config.AuthUrl)/manage" class="header__profile__welcome">
+            <strong>@User.FindFirstValue("name")</strong>
+        </a>
+        <a href="#" class="header__profile__image">
+            <img src="@(Config.AuthUrl)/avatar/@(User.FindFirstValue(ClaimTypes.NameIdentifier))" alt="" onerror="this.onerror=null;this.src='/images/noavatar.png';">
+        </a>
+        <div class="header__profile__logout">
+            <a class="btn btn-danger text-white" href="@(Config.AuthUrl)/logoff?callback=@(hostUrl)">
+                @Localizer["LogoutTitle"]
+            </a>
+        </div>
+    }
+    else
+    {
+        <button class="btn btn-success" type="button" onclick="location.href = '/home/profile';">
+            @Localizer["ProfileTitle"]
+        </button>
+        <button class="btn btn-danger" onclick="location.href = '@(Config.AuthUrl)/logoff?callback=@(hostUrl)';">
+            @Localizer["LogoutTitle"]
+        </button>
+    }
+}
+else
+{
+    <button class="btn btn-success" type="button" onclick="location.href = '/signin';">
+        @Localizer["LoginTitle"]
+    </button>
+    <button class="btn btn-danger" type="button" onclick="window.open('@(Config.AuthUrl)/register', '_blank');">
+        @Localizer["RegisterTitle"]
+    </button>
+}

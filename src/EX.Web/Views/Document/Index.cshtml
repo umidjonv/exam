@@ -1,0 +1,28 @@
+﻿@inject IViewLocalizer Localizer
+@inject AppConfig Config
+@model IPagedList<Document>
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+
+<section class="section">
+    <div class="container">
+        <div class="title">
+            <h2>@ViewData["Title"]</h2>
+        </div>
+        <div class="container">
+            <div class="row documents">
+                @await Html.PartialAsync("_DocumentListing", Model)
+            </div>
+            <div class="text-center">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+                {
+                    UlElementClasses = new[] { "pagination", "pagination-lg", "pagination-warning"},
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+            </div>
+        </div>
+    </div>
+</section>

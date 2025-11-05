@@ -1,0 +1,62 @@
+﻿@-webkit-keyframes frame-animated {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes frame-animated {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@-o-keyframes frame-animated {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes frame-animated {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.animation {
+    -webkit-animation: frame-animated 3s infinite;
+    -moz-animation: frame-animated 3s infinite;
+    -o-animation: frame-animated 3s infinite;
+    animation: frame-animated 3s infinite;
+}

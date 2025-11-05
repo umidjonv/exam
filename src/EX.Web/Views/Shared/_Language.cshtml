@@ -1,0 +1,32 @@
+﻿@inject HandbookService HandbookService
+@inject IOptions<RequestLocalizationOptions> LocOptions
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var selectedCulture = requestCulture.RequestCulture.Culture.Name;
+    var cultureList = await HandbookService.GetCultures();
+    var returnUrl = string.IsNullOrWhiteSpace(Context.Request.Path) ? "~/" : $"~{Context.Request.Path.Value}";
+}
+
+<div class="dropdown languages">
+    @if (ViewBag.ShowDashboard != null)
+    {
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="~/images/flags/@(selectedCulture).svg"> @selectedCulture.Titleize()
+        </button>
+    }
+    else
+    {
+        <button class="btn btn-outline-light dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <img src="~/images/flags/@(selectedCulture).svg"> @selectedCulture.Titleize()
+        </button>
+    }
+    <div class="dropdown-menu" style="min-width: 6.5rem;">
+        @foreach (var cultureItem in cultureList.Where(w => w.Id != selectedCulture))
+        {
+            <a class="dropdown-item" asp-area="" asp-action="ChangeLanguage" asp-controller="Home" asp-route-returnUrl="@returnUrl" asp-route-culture="@(cultureItem.Id)">
+                <img src="~/images/flags/@(cultureItem.Id).svg"> @(cultureItem.Id.Titleize()) 
+            </a>
+        }
+    </div>
+</div>
+

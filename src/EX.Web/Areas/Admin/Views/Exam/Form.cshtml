@@ -1,0 +1,399 @@
+﻿@model ExamViewModel
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+@section Styles
+{
+    <link href="~/lib/bootstrap-slider/css/bootstrap-slider.min.css" rel="stylesheet" />
+    <style>
+        .slider-horizontal {
+            margin-left: 15px;
+        }
+    </style>
+
+    <style>
+        .clockpicker {
+            float: right;
+            left: -50px;
+            position: relative;
+        }
+    </style>
+    <link href="~/lib/wickedpicker/wickedpicker.min.css" rel="stylesheet" />
+    <style>
+        .wickedpicker {
+            width: 200px;
+        }
+    </style>
+}
+<form asp-action="Form" id="examForm">
+
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="CultureId" class="control-label">@Localizer["Language"]</label>
+        <select asp-for="CultureId" asp-items="@ViewBag.Cultures" class="form-control"></select>
+        <span asp-validation-for="CultureId" class="text-danger"></span>
+    </div>
+
+
+    @if (Model.Id > 0)
+    {
+        <div class="form-group">
+            <label asp-for="Code" class="control-label"></label>
+            <input type="hidden" asp-for="Code" />
+            <input readonly="readonly" disabled="disabled" value="@Model.Code" class="form-control" />
+        </div>
+    }
+    <div class="form-group">
+        <label asp-for="Title" class="control-label">@Localizer["Title"]</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <table class="table text-center" id="table-options">
+            <thead>
+                <tr>
+                    <th scope="col">@Localizer["Category"]</th>
+                    <th scope="col" width="20%">@Localizer["RegularCount"]</th>
+                    <th scope="col" width="20%">@Localizer["BaseCount"]</th>
+                    <th scope="col" width="10%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+
+
+                    for (var i = 0; i < Model.Options.Count; i++)
+                    {
+                        var regularCount = ((Dictionary<int, QuestionType>)ViewBag.QuestionTypes)[Model.Options[i].CategoryId].AddQuestions;
+                        var baseCount = ((Dictionary<int, QuestionType>)ViewBag.QuestionTypes)[Model.Options[i].CategoryId].BaseQuestions;
+                        <tr name="Option@(Model.Options[i].Id)">
+                            <td>
+                                <select asp-for="@Model.Options[i].CategoryId" asp-items="@ViewBag.CategoryList" class="form-control" disabled="disabled"></select>
+                                <input type="hidden" asp-for="@Model.Options[i].CategoryId" />
+                            </td>
+                            <td>
+                                <input required type="number" asp-for="@Model.Options[i].CountOfRegularQuestions" max="@regularCount" min="0" class="form-control" />
+                            </td>
+                            <td>
+                                <input required type="number" asp-for="@Model.Options[i].CountOfBaseQuestions" max="@baseCount" min="0" class="form-control" />
+                            </td>
+                            <th scope="row">
+                                <input type="hidden" asp-for="@Model.Options[i].Id" />
+                                <button type="button" class="btn btn-danger slice-item">
+                                    <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                </button>
+                            </th>
+                        </tr>
+
+                    }
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">
+                        <button type="button" id="add-item" class="btn btn-secondary btn-block">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                            @Localizer["Add"]
+                        </button>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        <script>
+
+            $(document).ready(function () {
+                var lastValue = 0;
+
+                function keypressed() {
+                    var val = $(this).val();
+                    if (val !== '' && Number.isInteger(parseInt(val)))
+                        lastValue = $(this).val();
+                }
+
+                function keyupped() {
+                    var val = parseInt($(this).val());
+
+
+                    if (val !== '' && Number.isInteger(val)) {
+                        var maxVal = $(this).attr("max");
+                        var minVal = $(this).attr("min");
+                        if (val > maxVal || val < minVal)
+                            $(this).val(lastValue);
+
+                    }
+
+
+
+                }
+
+                function checkCategoryExist(element) {
+                    var isRemove = false;
+                    var addingCategory = $(element).val();
+
+                    var catLength = $('select[name*=".CategoryId"]').length;
+                    $('select[name*=".CategoryId"]').each(function(index) {
+                        var currentCategory = $(this).val();
+                        var display = $(this).css("display");
+                        if ((catLength - 1) === index)
+                            return;
+                        if (currentCategory === addingCategory && !$(this).is(":hidden")) {
+                            isRemove = true;
+                            return;
+                        }
+                    });
+
+                    if (isRemove) {
+                        alert('Данная категория уже выбрана выберите другую!');
+                        $(element).closest('tr').remove();
+                    }
+                }
+
+                var maxCount = 0;
+                function calculateMaximumBall() {
+                    maxCount = 0;
+                    $('input[name*=".CountOfBaseQuestions"], input[name*=".CountOfRegularQuestions"]').each(function(index) {
+                        var val = $(this).val();
+                        maxCount += parseInt(val);
+                    });
+                    $("#maxCount").text(maxCount);
+                    $('#PassingScore').attr('max', maxCount);
+                }
+
+                $(document).on("keypress", 'input[name *= ".CountOfRegularQuestions"]', keypressed);
+                $(document).on("keypress", 'input[name*=".CountOfBaseQuestions"]', keypressed);
+                $(document).on("keyup", 'input[name *= ".CountOfRegularQuestions"]', keyupped);
+                $(document).on("keyup", 'input[name*=".CountOfBaseQuestions"]', keyupped);
+                $(document).on("change", 'input[name*=".CountOfBaseQuestions"], input[name*=".CountOfRegularQuestions"]', function() { calculateMaximumBall(); });
+
+                var currentCulture = '@Model.CultureId';
+
+                function LanguageIsAccept(element) {
+                    var ids = [];
+
+                    $('select[name*=".CategoryId"]').each(function() {
+                        var id = $(this).val();
+                        ids.push(parseInt(id));
+                    });
+                    HaveQuestions(element, ids);
+
+                }
+
+                function HaveQuestions(element, ids, removeCategory = false, removedCategory= null) {
+                    if (ids.length !== 0) {
+                        $.ajax({
+                            method: "POST",
+                            url: "@Url.Action("LanguageAccept")",
+                            data: {
+                                lang: $(element).val(),
+                                categoryIds: ids
+                            },
+                            success: function(data) {
+                                console.log(data);
+                                if (data === true) {
+                                    currentCulture = $(element).find(":selected").val();
+                                } else {
+                                    if (removeCategory) {
+                                        alert("Не все вопросы заполнены по данной категории");
+                                        $(removedCategory).closest("tr").remove();
+                                    } else {
+                                        alert("Не все вопросы заполнены в категориях по данному языку");
+                                        $(element).val(currentCulture);
+                                    }
+
+                                }
+
+                            },
+                            error: function(thr) {
+                                console.error(thr);
+                            }
+                        });
+                    }
+                }
+
+
+                $("#CultureId").on("change",
+                    function() {
+                        LanguageIsAccept(this);
+                    });
+
+
+                var questionTypes = {
+                @foreach (var questionType in (Dictionary<int, QuestionType>) ViewBag.QuestionTypes)
+                {
+                    @questionType.Key
+                    @:: {
+                    @:RegularCount: @questionType.Value.AddQuestions,
+                    @:BaseCount: @questionType.Value.BaseQuestions
+                    @:},
+                }
+            };
+
+            $(document).on('change', 'select[name*=".CategoryId"]',
+            function () {
+
+                var categoryId = $(this).val();
+                var type = questionTypes[categoryId];
+
+                var index = $(this).attr('name').replace('].CategoryId', '').replace('Options[', '');
+                $('[name="Options[' + index + '].CountOfRegularQuestions"]').val(type.RegularCount);
+                $('[name="Options[' + index + '].CountOfBaseQuestions"]').val(type.BaseCount);
+
+                $('[name="Options[' + index + '].CountOfRegularQuestions"]').attr("max", type.RegularCount);
+                $('[name="Options[' + index + '].CountOfBaseQuestions"]').attr("max", type.BaseCount);
+
+                HaveQuestions($('#CultureId'), [parseInt(categoryId)], true, this);
+
+                checkCategoryExist(this);
+
+                calculateMaximumBall();
+
+
+
+                });
+
+                $("#add-item").on("click",
+                function (e) {
+                                
+                    var index = $("#table-options tbody tr").length;
+                    var row = "<tr>";
+                    var categories = '<select name="Options[' + index + '].CategoryId" class="form-control" id="Cats">' + '<option>Выберите категорию</option>';
+                    @foreach (var item in (SelectList) ViewBag.CategoryList)
+                    {
+                        @:categories += '<option value="@item.Value">@item.Text</option>';
+                    }
+                    categories += "</select>";
+
+                    row += '<td>' + categories + '</td>';
+                    row += '<td><input required type="number" name="Options[' + index + '].CountOfRegularQuestions" min="0"  class="form-control" /></td>';
+                    row += '<td><input required type="number" name="Options[' + index + '].CountOfBaseQuestions" min="0" class="form-control" /></td>';
+                    row += '<th scope="row"><button type="button" class="btn btn-danger slice-item"><i class="fa fa-trash-o" aria-hidden="true"></i></button></th>';
+                    row += "</tr>";
+                    $("#table-options").append(row);
+                                calculateMaximumBall();
+                            });
+
+                        
+
+                    });
+
+            $("#table-options").on("click",
+                ".slice-item",
+                function(e) {
+
+                $("#table-options").on("click",
+                    ".slice-item",
+                    function(e) {
+                    var categoryRow = $(this).closest("tr");
+                    var attr = categoryRow.attr('name');
+                    if (typeof attr !== typeof undefined && attr !== false) {
+                        var optionId = categoryRow.attr("name").replace("Option", "");
+                        categoryRow.hide();
+                        $("#examForm").append('<input type="hidden" name="deletedOptions" value="' + optionId + '"/>');
+                    } else {
+                        categoryRow.remove();
+                    }
+                        var categoryRow = $(this).closest("tr");
+                        var attr = categoryRow.attr('name');
+                        if (typeof attr !== typeof undefined && attr !== false) {
+                            var optionId = categoryRow.attr("name").replace("Option", "");
+                            categoryRow.hide();
+                            $("#examForm").append('<input type="hidden" name="deletedOptions" value="' + optionId + '"/>');
+                        } else {
+                            categoryRow.remove();
+                        }
+
+                    });
+
+
+            });
+        </script>
+        <span asp-validation-for="Options" class="text-danger"></span>
+    </div>
+    <div class="row" style="margin-top: 30px;">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="PeriodInDays" class="control-label">@Localizer["RenewalDate"]</label>
+                <input id="PeriodInDaysSlider" data-slider-id='PeriodInDaysSlider' data-slider-min="0" data-slider-max="30" data-slider-step="1" data-slider-value="@(Model.PeriodInDays??0)" />
+                <input type="hidden" asp-for="PeriodInDays" class="form-control" value="@(Model.PeriodInDays??0)" />
+                <span asp-validation-for="PeriodInDays" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label asp-for="DurationInMinutes" class="control-label">@Localizer["Duration"]</label>
+                <div class="clockpicker">
+                    <input id="DurationClock" type="text" class="form-control" value="@(Model.DurationFormat)">
+                </div>
+                <input type="hidden" asp-for="DurationInMinutes" class="form-control" />
+                <span asp-validation-for="DurationInMinutes" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label asp-for="PassingScore" class="control-label">@Localizer["PassingScore"]</label>
+        <input type="number" asp-for="PassingScore" class="form-control" min="1" />
+        <label>@Localizer["MaxBall"]: <span id="maxCount">@Model.Options.Sum(x => x.CountOfBaseQuestions + x.CountOfRegularQuestions)</span></label>
+        <br /><span asp-validation-for="PassingScore" class="text-danger"></span>
+    </div>
+    <div class="form-group text-center">
+        <input type="submit" value="@Localizer["Save"]" class="btn btn-primary btn-lg" />
+    </div>
+</form>
+
+@section Scripts
+{
+    <script src="~/lib/bootstrap-slider/js/bootstrap-slider.min.js"></script>
+    <script>
+        $(function () {
+            $("#PeriodInDaysSlider").slider({
+                tooltip: 'always',
+                formatter: function (value) {
+                    return value + ' дней';
+                }
+            }).on('slide',
+                function (s) {
+                    $('#PeriodInDays').val(s.value);
+                });
+        });
+    </script>
+
+    <script src="~/lib/wickedpicker/wickedpicker.min.js"></script>
+    <script>
+        $(function() {
+            var options = {
+                now: "@Model.DurationFormat",
+                twentyFour: true,
+                upArrow: 'wickedpicker__controls__control-up',
+                downArrow: 'wickedpicker__controls__control-down',
+                close: 'wickedpicker__close',
+                hoverState: 'hover-state',
+                title: 'Выберите время',
+                showSeconds: false,
+                timeSeparator: ' : ',
+                secondsInterval: 1,
+                minutesInterval: 5,
+                beforeShow: null,
+                afterShow: null,
+                show: null,
+                clearable: false
+            };
+            $('#DurationClock').wickedpicker(options);
+
+            $('#DurationClock').on('change',
+                function(s) {
+                    var splitted = $(this).val().split(" : ");
+                    var minutes = splitted[0] * 60;
+                    minutes = minutes + splitted[1] * 1;
+
+                    $('#DurationInMinutes').val(minutes);
+                });
+
+
+        });
+
+    </script>
+}

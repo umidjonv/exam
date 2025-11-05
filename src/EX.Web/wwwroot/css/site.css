@@ -1,0 +1,79 @@
+﻿.pagination {
+}
+
+    .pagination .page-item.active .page-link {
+        background-color: #254082;
+        color: white;
+        border-color: #254082;
+    }
+
+    .pagination a.page-link {
+        color: #254082;
+        background-color: white;
+    }
+
+    .pagination span.page-link {
+        background-color: #254082;
+        color: white;
+    }
+
+.pagination-warning {
+}
+
+    .pagination-warning .page-item.active .page-link {
+        background-color: #F8A849;
+        color: white;
+        border-color: #F8A849;
+    }
+
+    .pagination-warning a.page-link {
+        color: #254082;
+        background-color: white;
+    }
+
+    .pagination-warning span.page-link {
+        background-color: #254082;
+        color: white;
+    }
+
+
+#back-to-top {
+    display: inline-block;
+    background-color: #FF9800;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-radius: 4px;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    transition: background-color .3s, opacity .5s, visibility .5s;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1000;
+}
+
+    #back-to-top::after {
+        content: "\f077";
+        font-family: FontAwesome;
+        font-weight: normal;
+        font-style: normal;
+        font-size: 2em;
+        line-height: 50px;
+        color: #fff;
+    }
+
+    #back-to-top:hover {
+        cursor: pointer;
+        background-color: #333;
+        text-decoration:none;
+    }
+
+    #back-to-top:active {
+        background-color: #555;
+    }
+
+    #back-to-top.show {
+        opacity: 1;
+        visibility: visible;
+    }

@@ -1,0 +1,394 @@
+﻿@inject AppConfig Config
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+    ViewBag.ShowLanding = true;
+}
+
+@section Styles{
+    <link href="~/css/owl.carousel.css" rel="stylesheet" />
+}
+
+<!-- Main slider -->
+<section class="section section-main-slider">
+    <div id="main_slider" class="owl-carousel main-slider">
+        <div class="item">
+            <div class="main-slider__item">
+                <img src="~/images/slider-image.jpg" alt="">
+                <div class="main-slider__caption">
+                    <div class="main-slider__caption-inner">
+                        <h2>@Localizer["SlideTitle"]</h2>
+                        <p>@Localizer["SlideDescription"]</p>
+                        <a href="#" onclick="goSelector('#docs')" class="btn btn-success btn-lg">
+                            <i class="fa fa-angle-double-down" aria-hidden="true"></i>
+                            @Localizer["SlideButton"]
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="item">
+            <div class="main-slider__item">
+                <img src="~/images/slider-image.jpg" alt="">
+                <div class="main-slider__caption">
+                    <div class="main-slider__caption-inner">
+                        <h2>@Localizer["DownloadApp"]</h2>
+                        <p>@Localizer["SlideDescription"]</p>
+                        <a href="#" onclick="goSelector('#apps')" class="btn btn-success btn-lg">
+                            <i class="fa fa-download" aria-hidden="true"></i>
+                            @Localizer["DownloadButton"]
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Examination system -->
+<section class="section section-examination-system" id="landing">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <img src="~/images/intro.png" alt="">
+            </div>
+            <div class="col-lg-6">
+                <div class="title title--left">
+                    <h2>Examination System</h2>
+                    <p>@Localizer["ViaExaminationSystem"]</p>
+                </div>
+                <div class="ex-system">
+                    <div class="ex-system__item">
+                        <img src="~/images/steps-icons/1.svg" alt="">
+                        <p>@Localizer["LearnTheRules"]</p>
+                    </div>
+                    <div class="ex-system__item">
+                        <img src="~/images/steps-icons/2.svg" alt="">
+                        <p>@Localizer["PassTestsSuccessfully"]</p>
+                    </div>
+                    <div class="ex-system__item">
+                        <img src="~/images/steps-icons/3.svg" alt="">
+                        <p>@Localizer["BeBroker"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About -->
+<section class="section section-about" id="about">
+    <div class="container">
+        <div class="title">
+            <h2>@Localizer["AboutExam"]</h2>
+        </div>
+        <div class="about-grid">
+            <div class="row row-min justify-content-center">
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/1.svg" alt=""></div>
+                        <p>@Localizer["AboutExam1"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/2.svg" alt=""></div>
+                        <p>@Localizer["AboutExam2"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/3.svg" alt=""></div>
+                        <p>@Localizer["AboutExam3"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/4.svg" alt=""></div>
+                        <p>@Localizer["AboutExam4"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/5.svg" alt=""></div>
+                        <p>@Localizer["AboutExam5"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/6.svg" alt=""></div>
+                        <p>@Localizer["AboutExam6"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/7.svg" alt=""></div>
+                        <p>@Localizer["AboutExam7"]</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-lg-3 about-grid__col">
+                    <div class="about-grid__item">
+                        <div><img src="~/images/about-icons/8.svg" alt=""></div>
+                        <p>@Localizer["AboutExam8"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Video lessons -->
+<section class="section section-lessons" id="lessions">
+    <div class="container">
+        <div class="title">
+            <h2>@Localizer["TrainingVideos"]</h2>
+            <div id="lessons_slider_nav" class="owl-nav"></div>
+        </div>
+        <div class="lessons">
+            <div class="lessons-slider">
+                <div id="lessons_slider" class="owl-carousel">
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/video.svg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["TrainingVideos1"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/video.svg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["TrainingVideos2"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/video.svg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["TrainingVideos3"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/video.svg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["TrainingVideos4"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Download app -->
+<section class="section section-download" id="apps">
+    <div class="container">
+        <div class="title">
+            <h2>@Localizer["DownloadApp"]</h2>
+        </div>
+        <div class="download-app-slider">
+            <div id="download_app_slider_nav" class="owl-nav"></div>
+            <div id="download_app_slider" class="owl-carousel">
+                <div class="item">
+                    <img src="~/images/screenshots/screenshot-1.png" alt="">
+                </div>
+                <div class="item">
+                    <img src="~/images/screenshots/screenshot-2.png" alt="">
+                </div>
+                <div class="item">
+                    <img src="~/images/screenshots/screenshot-3.png" alt="">
+                </div>
+            </div>
+        </div>
+        <div class="text-center">
+            <a href="#" id="download-link" class="btn btn-success btn-lg">
+                Идёт проверка ОС...
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Presentations -->
+<section class="section section-presentations" id="slides">
+    <div class="container">
+        <div class="title">
+            <h2>@Localizer["Presentations"]</h2>
+            <div id="presentations_slider_nav" class="owl-nav"></div>
+        </div>
+        <div class="lessons">
+            <div class="lessons-slider">
+                <div id="presentations_slider" class="owl-carousel">
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/presentations/presentation-1.jpg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["Presentations1"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/presentations/presentation-2.jpg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["Presentations2"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/presentations/presentation-3.jpg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["Presentations3"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="lessons__item">
+                            <a href="#"><img src="~/images/presentations/presentation-1.jpg" alt=""></a>
+                            <div class="lessons__caption">
+                                <a href="#">@Localizer["Presentations4"]</a>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-documents" style="background-image: url('/images/documents-bg.jpg');" id="docs">
+    <div class="overlay-bg"></div>
+    <div class="container">
+        <div class="title title--white">
+            <h2>@Localizer["DocsTitle"]</h2>
+        </div>
+        <div class="row documents">
+            @{
+                var docs = (IPagedList<Document>)ViewBag.Docs;
+            }
+            @await Html.PartialAsync("_DocumentListing", docs)
+        </div>
+        @if (docs.PageCount > 1)
+        {
+            <div class="text-center">
+                <a asp-action="Index" asp-controller="Document" class="btn btn-success btn-lg">@Localizer["ReadMore"]</a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts{
+
+    <script>
+        $(function() {
+
+            if (navigator.userAgent.indexOf("WOW") !== -1 ||
+                navigator.userAgent.indexOf("Win") !== -1 ) {
+
+                $("#download-link").attr("href", "@(Config.ExamApi)/setup/client.msi?v=@DateTime.Now.ToString("yyyyddMM")");
+                $("#download-link").html("@Localizer["DownloadButton"]");
+            } else {
+
+                $("#download-link").html("Установщик для ОС Windows!");
+            }
+
+        });
+    </script>
+
+    <script src="~/js/owl.carousel.js"></script>
+    <script>
+
+        $(function () {
+
+            // Main slider (home)
+            $('#main_slider').owlCarousel({
+                loop: true,
+                autoplay: true,
+                autoplaySpeed: 1000,
+                dotsSpeed: 1000,
+                margin: 0,
+                nav: false,
+                dot: true,
+                items: 1,
+            });
+
+            // Lessons slider
+            $('#lessons_slider').owlCarousel({
+                loop: false,
+                margin: 30,
+                nav: true,
+                navContainer: '#lessons_slider_nav',
+                dot: false,
+                responsive: {
+                    0: {
+                        items: 1
+                    },
+                    600: {
+                        items: 2
+                    },
+                    1000: {
+                        items: 3
+                    }
+                }
+            });
+
+            // Download app slider
+            $('#download_app_slider').owlCarousel({
+                loop: true,
+                margin: 30,
+                touchDrag: false,
+                mouseDrag: false,
+                nav: true,
+                center: true,
+                navContainer: '#download_app_slider_nav',
+                dot: false,
+                responsive: {
+                    0: {
+                        items: 1
+                    },
+                    800: {
+                        items: 2
+                    },
+                    1000: {
+                        items: 3
+                    }
+                }
+            });
+
+            // Lessons slider
+            $('#presentations_slider').owlCarousel({
+                loop: false,
+                margin: 30,
+                nav: true,
+                navContainer: '#presentations_slider_nav',
+                dot: false,
+                responsive: {
+                    0: {
+                        items: 1
+                    },
+                    600: {
+                        items: 2
+                    },
+                    1000: {
+                        items: 3
+                    }
+                }
+            });
+
+        });
+    </script>
+
+}

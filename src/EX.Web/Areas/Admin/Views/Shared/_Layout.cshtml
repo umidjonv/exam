@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.ShowDashboard = true;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+
+    <link href="~/css/dashboard.css" rel="stylesheet" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+}
+
+@{
+    await Html.RenderPartialAsync("_Menu");
+}
+
+<div class="main-dash__body">
+    <div class="dash-title">
+        <h2>@ViewData["Title"]</h2>
+    </div>
+    <div class="dash-card dash-card--blank mb-0">
+        @RenderBody()
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script src="~/lib/bootbox/bootbox.all.min.js"></script>
+    <script src="~/js/dashboard.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+}

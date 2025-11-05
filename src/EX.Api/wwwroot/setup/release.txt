@@ -1,0 +1,10 @@
+﻿Features:
+
+- Better access to computer hardware (microphone and speakers)
+- Improved system notifications when a conversation is offered
+- Support for click-to-call (tel:+998 97 711 17 70)
+- Busylight support
+- Auto-update and installation of new versions in the background
+- Copy/paste support
+- Native menu
+- Prevent system sleep

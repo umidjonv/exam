@@ -1,0 +1,22 @@
+﻿@model ExamViewModel
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+    ViewBag.HideMenuBar = true;
+    ViewBag.NoTitle = true;
+}
+<div class="test-start-end">
+    <div class="dash-card mb-0">
+        @if (Model != null)
+        {
+            var option = @Model.Options.FirstOrDefault();
+            <label>@Localizer["ExamTitle"] @Model.Title</label><br />
+            <label>@Localizer["QuestionsCount"] @(ViewBag.QuestionsCount)</label><br />
+            <label>@Localizer["Duration"] @Model.DurationInMinutes</label>
+            <p>@Localizer["PleaseClickStartButton"]</p>
+            <form asp-action="Start" asp-route-id="@Model.Id" asp-route-scheduleId="@ViewBag.scheduleId">
+                <button type="submit" class="btn btn-success btn-rounded">@Localizer["Start"]</button>
+            </form>
+        }
+    </div>
+</div>

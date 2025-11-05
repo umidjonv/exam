@@ -1,0 +1,15 @@
+﻿@inject HandbookService HandbookService
+@inject IOptions<RequestLocalizationOptions> LocOptions
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var cultureList = await HandbookService.GetCultures();
+    var returnUrl = string.IsNullOrWhiteSpace(Context.Request.Path) ? "~/" : $"~{Context.Request.Path.Value}";
+}
+
+@foreach (var cultureItem in cultureList)
+{
+    <a class="dropdown-item" asp-area="" asp-action="ChangeLanguage" asp-controller="Home" asp-route-returnUrl="@returnUrl" asp-route-culture="@(cultureItem.Id)">
+        <img src="~/images/flags/@(cultureItem.Id).svg">
+    </a>
+}
+

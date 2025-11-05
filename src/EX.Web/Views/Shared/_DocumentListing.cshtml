@@ -1,0 +1,47 @@
+﻿@inject IViewLocalizer Localizer
+@model IEnumerable<Document>
+@{
+    Layout = null;
+}
+
+@foreach (var item in Model)
+{
+    <div class="col-md-6 documents__col">
+        <div class="documents__item">
+            <a href="@Url.Action("Download", "Document", new {id = item.Id})" data-toggle="modal" data-target="#doc-modal-@item.Id">
+                @item.Title.Truncate(100)
+            </a>
+            <div class="modal fade" id="doc-modal-@item.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                @item.Title
+                            </h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            @item.Description
+                        </div>
+                        <div class="modal-footer">
+                            @if (!string.IsNullOrWhiteSpace(item.FileName))
+                            {
+                                <form asp-action="Download" asp-controller="Document" asp-route-id="@item.Id" asp-antiforgery="true">
+                                    <button type="submit" class="btn btn-success" onclick="return $('#doc-modal-@item.Id').modal('hide');">
+                                        @Localizer["Download"]
+                                    </button>
+                                </form>
+                            }
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                @Localizer["Close"]
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span>@item.ModifiedDate.Humanize(false)</span>
+        </div>
+    </div>
+}

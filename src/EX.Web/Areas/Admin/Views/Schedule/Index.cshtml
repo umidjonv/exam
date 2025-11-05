@@ -1,0 +1,116 @@
+﻿@model IPagedList<Schedule>
+@inject HandbookService Handbook
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["PageTitle"];
+}
+
+<div class="test-table">
+    <div class="dash-card">
+        <div class="test-table__header">
+            <div>
+                <a asp-action="Form" class="btn btn-success">
+                    <i class="fa fa-plus" aria-hidden="true"></i>
+                    @Localizer["CreateNew"]
+                </a>
+            </div>
+            <div class="test-table__header__pagination">
+                @Html.PagedListPager(Model, page => Url.Action("Index", new { page }), new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    Display = PagedListDisplayMode.IfNeeded
+                })
+            </div>
+        </div>
+        <div class="scroll">
+            <table id="example" class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col" width="10%">
+                            @Localizer["StartDate"]
+                        </th>
+                        <th scope="col" width="10%">
+                            @Localizer["EndDate"]
+                        </th>
+                        <th scope="col" width="10%">
+                            @Localizer["Region"]
+                        </th>
+                        <th scope="col">
+                            @Localizer["Title"]
+                        </th>
+                        <th scope="col" width="10%">
+                            @Localizer["CountOfMember"]
+                        </th> 
+                        <th scope="col" width="10%">
+                            @Localizer["Mode"]
+                        </th>
+                        <th scope="col" width="10%">
+                            @Localizer["Status"]
+                        </th>
+                        <th scope="col" width="10%"></th>
+                        <th scope="col" width="10%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var regions = await Handbook.GetRegions(); 
+                    }
+                    @foreach (var item in Model)
+                    {
+                        var rowClass = item.Status switch
+                        {
+                            ScheduleStatus.New => "table-primary",
+                            ScheduleStatus.Pending => "table-warning",
+                            ScheduleStatus.Active => "table-active",
+                            ScheduleStatus.Finished => "table-success",
+                            _ => "table"
+                        };
+
+                        <tr class="@rowClass">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.StartDate)
+                            </td>
+                            <td>
+                                @item.StartDate.AddMinutes(item.Exam.DurationInMinutes)
+                            </td>
+                            <td>
+                                @(regions?.FirstOrDefault(a => a.Id == item.RegionId)?.ShortName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Exam.Title)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.LimitOfParticipants)
+                            </td> 
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Mode)
+                            </td> 
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Status)
+                            </td> 
+                            <td align="center">
+                                @if (item.Status == ScheduleStatus.New)
+                                {
+                                    <a asp-action="Form" class="btn btn-info" data-toggle="tooltip" title="@Localizer["Edit"]" asp-route-id="@item.Id">
+                                        <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                                    </a>
+                                }
+                            </td>
+                            <td align="center">
+                                @if (item.Status == ScheduleStatus.New)
+                                {
+                                    <form asp-action="Delete" asp-route-id="@item.Id">
+                                        <button class="btn btn-danger" type="submit" data-toggle="tooltip" title="@Localizer["Delete"]" onclick="return deleteConfirm(this)">
+                                            <i class="fa fa-trash-o" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

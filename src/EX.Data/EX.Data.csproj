@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework>net8.0</TargetFramework>
+    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Entities\ExamResultReport.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.21" /> 
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EX.Common\EX.Common.csproj" />
+  </ItemGroup>
+
+</Project>

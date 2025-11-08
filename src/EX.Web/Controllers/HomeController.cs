@@ -41,7 +41,9 @@ namespace EX.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ViewBag.Docs = await _db.Documents.OrderByDescending(a => a.ModifiedDate).ToPagedListAsync(1, 5);
+            // Disabled: Database is currently disabled in Startup.cs
+            // ViewBag.Docs = await _db.Documents.OrderByDescending(a => a.ModifiedDate).ToPagedListAsync(1, 5);
+            ViewBag.Docs = null;
 
             return View();
         }

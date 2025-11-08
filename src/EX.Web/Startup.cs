@@ -50,7 +50,8 @@ namespace EX.Web
             {
                 IdentityModelEventSource.ShowPII = true;
 
-                NetworkHelper.ConfigureProxy();
+                // Disabled: NetworkHelper.ConfigureProxy() causes slow startup due to DNS lookups
+                // NetworkHelper.ConfigureProxy();
             }
 
             Configuration = configuration;
@@ -77,11 +78,18 @@ namespace EX.Web
             services.AddTransient<ExamService>();
             services.AddTransient<SmsService>();
             services.AddTransient<IdentityService>();
-            services.AddSingleton(provider => new RedisManagerPool(config.RedisConnection));
-            services.AddTransient<CacheService>();
 
-            services.AddTransient(a => new MinStorageClient(config.CloudEndpoint));
-            services.AddHostedService<ExamJob>();
+            // Disabled: RedisManagerPool can cause slow startup if Redis is unavailable
+            // services.AddSingleton(provider => new RedisManagerPool(config.RedisConnection));
+
+            // Disabled: CacheService depends on RedisManagerPool
+            // services.AddTransient<CacheService>();
+
+            // Disabled: MinStorageClient can cause slow startup if MinIO is unavailable
+            // services.AddTransient(a => new MinStorageClient(config.CloudEndpoint));
+
+            // Disabled: ExamJob requires database which is currently disabled
+            // services.AddHostedService<ExamJob>();
 
             services.AddLocalization(opts =>
             {

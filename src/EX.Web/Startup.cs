@@ -112,15 +112,24 @@ namespace EX.Web
             })
             .AddDataAnnotationsLocalization();
 
-            // Configure Bearer Authentication with no expiration
+            // Configure Bearer Authentication with no expiration for API
+            // and Cookie Authentication for web pages
             var jwtSecretKey = Configuration["Jwt:SecretKey"];
             var jwtIssuer = Configuration["Jwt:Issuer"];
             var jwtAudience = Configuration["Jwt:Audience"];
 
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/signin";
+                options.LogoutPath = "/signout";
+                options.AccessDeniedPath = "/error";
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromHours(24);
             })
             .AddJwtBearer(options =>
             {

@@ -4,7 +4,7 @@
     ViewData["Title"] = Localizer["PageTitle"];
     bool isHaveCategory = ViewBag.isHaveCategory ?? false;
 }
-<form asp-action="Form" id="question-form">
+<form asp-action="Form" method="post" id="question-form">
     <input type="hidden" asp-for="Id" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 

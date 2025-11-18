@@ -222,8 +222,15 @@ namespace EX.Web.Areas.Admin.Controllers
                 if (emptyLocales.Length == 0)
                 {
                     TempData["error"] = "Question Title must not be empty!";
+                    await LoadViewData(model);
 
-                    return RedirectToAction(nameof(Form));
+                    var cultures = await _handbook.GetCultures();
+                    foreach (var locale in model.Locales)
+                    {
+                        locale.CultureName = cultures.OrderByDescending(a => a.Code).FirstOrDefault(a => a.Id == locale.CultureId)?.Name;
+                    }
+
+                    return View(model);
                 }
                 else
                 {

@@ -30,7 +30,14 @@ namespace EX.Web.Services
         {
             try
             {
-                var list = await Get<IEnumerable<CultureDto>>("/Culture/GetAll");
+                var list = new List<CultureDto>
+                { 
+                    new CultureDto { Id = "en-US", Name = "English (United States)", Code = "en-US" },
+                    new CultureDto { Id = "ru-RU", Name = "Русский", Code = "ru-RU" },
+                    new CultureDto { Id = "uz-UZ", Name = "O'zbekcha", Code = "uz-UZ" },
+                    
+                };
+                    /*await Get<IEnumerable<CultureDto>>("/Culture/GetAll");*/
 
                 return list.OrderByDescending(a => a.Id);
             }

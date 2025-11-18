@@ -53,8 +53,12 @@ namespace EX.Web.Mappers
             }));
         }
 
-        public static IEnumerable<QuestionViewModel> ToCollection(this IEnumerable<Question> items)
+        
+        public static IEnumerable<QuestionViewModel> ToCollection(this IEnumerable<Question>? items)
         {
+            if (items is null)
+                return Enumerable.Empty<QuestionViewModel>();
+
             return Mapper.Map<IEnumerable<QuestionViewModel>>(items);
         }
 

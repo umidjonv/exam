@@ -72,8 +72,8 @@ namespace EX.Web
 
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
-            services.AddSingleton<IAuthTokenProvider, AuthTokenProvider>();
-            //services.AddDbContext<IAppDbContext, AppDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddSingleton<IAuthTokenProvider, AuthTokenProvider>();
+            services.AddDbContext<IAppDbContext, AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient<HandbookService>();
             services.AddTransient<ExamService>();
             services.AddTransient<SmsService>();

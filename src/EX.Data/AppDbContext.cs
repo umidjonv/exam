@@ -58,6 +58,8 @@ namespace EX.Data
            : base(options)
         {
             _httpContext = httpContext;
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
         }
 
         public DbSet<User> Users { get; set; }

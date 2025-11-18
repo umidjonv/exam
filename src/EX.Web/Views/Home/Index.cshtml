@@ -279,9 +279,18 @@
             @{
                 var docs = (IPagedList<Document>)ViewBag.Docs;
             }
-            @await Html.PartialAsync("_DocumentListing", docs)
+            @if (docs != null)
+            {
+                @await Html.PartialAsync("_DocumentListing", docs)
+            }
+            else
+            {
+                <div class="col-12 text-center text-white">
+                    <p>@Localizer["NoDocuments"]</p>
+                </div>
+            }
         </div>
-        @if (docs.PageCount > 1)
+        @if (docs != null && docs.PageCount > 1)
         {
             <div class="text-center">
                 <a asp-action="Index" asp-controller="Document" class="btn btn-success btn-lg">@Localizer["ReadMore"]</a>

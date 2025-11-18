@@ -50,7 +50,8 @@ namespace EX.Web
             {
                 IdentityModelEventSource.ShowPII = true;
 
-                NetworkHelper.ConfigureProxy();
+                // Disabled: NetworkHelper.ConfigureProxy() causes slow startup due to DNS lookups
+                // NetworkHelper.ConfigureProxy();
             }
 
             Configuration = configuration;
@@ -71,17 +72,24 @@ namespace EX.Web
 
             services.AddMemoryCache();
             services.AddHttpContextAccessor();
-            services.AddSingleton<IAuthTokenProvider, AuthTokenProvider>();
-            //services.AddDbContext<IAppDbContext, AppDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
+            //services.AddSingleton<IAuthTokenProvider, AuthTokenProvider>();
+            services.AddDbContext<IAppDbContext, AppDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient<HandbookService>();
             services.AddTransient<ExamService>();
             services.AddTransient<SmsService>();
             services.AddTransient<IdentityService>();
-            services.AddSingleton(provider => new RedisManagerPool(config.RedisConnection));
-            services.AddTransient<CacheService>();
 
-            services.AddTransient(a => new MinStorageClient(config.CloudEndpoint));
-            services.AddHostedService<ExamJob>();
+            // Disabled: RedisManagerPool can cause slow startup if Redis is unavailable
+            // services.AddSingleton(provider => new RedisManagerPool(config.RedisConnection));
+
+            // Disabled: CacheService depends on RedisManagerPool
+            // services.AddTransient<CacheService>();
+
+            // Disabled: MinStorageClient can cause slow startup if MinIO is unavailable
+            // services.AddTransient(a => new MinStorageClient(config.CloudEndpoint));
+
+            // Disabled: ExamJob requires database which is currently disabled
+            // services.AddHostedService<ExamJob>();
 
             services.AddLocalization(opts =>
             {
@@ -112,15 +120,24 @@ namespace EX.Web
             })
             .AddDataAnnotationsLocalization();
 
-            // Configure Bearer Authentication with no expiration
+            // Configure Bearer Authentication with no expiration for API
+            // and Cookie Authentication for web pages
             var jwtSecretKey = Configuration["Jwt:SecretKey"];
             var jwtIssuer = Configuration["Jwt:Issuer"];
             var jwtAudience = Configuration["Jwt:Audience"];
 
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/signin";
+                options.LogoutPath = "/signout";
+                options.AccessDeniedPath = "/error";
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromHours(24);
             })
             .AddJwtBearer(options =>
             {

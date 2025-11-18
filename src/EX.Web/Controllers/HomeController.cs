@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using EX.Data.Core;
 using EX.Web.Consts;
@@ -7,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using EX.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
@@ -40,28 +41,75 @@ namespace EX.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
-            ViewBag.Docs = await _db.Documents.OrderByDescending(a => a.ModifiedDate).ToPagedListAsync(1, 5);
+            // Disabled: Database is currently disabled in Startup.cs
+            // ViewBag.Docs = await _db.Documents.OrderByDescending(a => a.ModifiedDate).ToPagedListAsync(1, 5);
+            ViewBag.Docs = null;
 
             return View();
         }
 
         [HttpGet("~/signin")]
-        public IActionResult SignIn(string redirectUrl = "/home/profile")
+        public IActionResult SignIn(string returnUrl = "/home/profile")
         {
-            return Challenge(new AuthenticationProperties
+            if (User.Identity.IsAuthenticated)
             {
-                RedirectUri = redirectUrl
-            }, OpenIdConnectDefaults.AuthenticationScheme);
+                return LocalRedirect(returnUrl);
+            }
+
+            return View("Login", new Models.LoginViewModel { ReturnUrl = returnUrl });
+        }
+
+        [HttpPost("~/login")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(Models.LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Login", model);
+            }
+
+            // Simple authentication - validates only that username is provided
+            // In production, this should validate against a database or identity provider
+            if (string.IsNullOrEmpty(model.Username))
+            {
+                ModelState.AddModelError("", "Username is required");
+                return View("Login", model);
+            }
+
+            // Determine role based on username
+            var role = model.Username.ToLower() == AuthConst.AdminRole ? AuthConst.AdminRole : "user";
+
+            // Create claims for the user
+            var claims = new List<System.Security.Claims.Claim>
+            {
+                new System.Security.Claims.Claim(AuthConst.UserClaim, model.Username),
+                new System.Security.Claims.Claim(ClaimTypes.Name, model.Username),
+                new System.Security.Claims.Claim(ClaimTypes.Role, role),
+                new System.Security.Claims.Claim(ClaimTypes.NameIdentifier, model.Username)
+            };
+
+            var claimsIdentity = new System.Security.Claims.ClaimsIdentity(
+                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(24)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new System.Security.Claims.ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
+            return LocalRedirect(model.ReturnUrl ?? "/home/profile");
         }
 
         [HttpGet("~/signout")]
-        public IActionResult SignOut(string redirectUrl = "/")
+        public async Task<IActionResult> SignOut(string redirectUrl = "/")
         {
-            return SignOut(new AuthenticationProperties
-            {
-                RedirectUri = redirectUrl
-            }, OpenIdConnectDefaults.AuthenticationScheme,
-                CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return LocalRedirect(redirectUrl);
         }
 
         public IActionResult ChangeLanguage(string culture, string returnUrl)

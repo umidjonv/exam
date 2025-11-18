@@ -37,12 +37,22 @@ namespace EX.Web.Areas.Admin.Controllers
         [Route("[area]/[controller]/{lang?}/{page?}")]
         public async Task<IActionResult> Index(string lang = SiteConst.DefaultCulture, int page = 1)
         {
-            var pager = await _db.Questions
+            var questions = await _db.Questions
                 .Include(a => a.Locales)
                 .Where(w => w.Locales.Any(a => a.CultureId == lang))
-                .Include(a => a.Category)
-                .ToCollection()
-                .ToPagedListAsync(page, SiteConst.PageSize);
+                .Include(a => a.Category).ToListAsync();
+
+
+
+            IEnumerable<QuestionViewModel> collection = new List<QuestionViewModel>();
+
+            if (questions.Any())
+            {
+                collection = questions.ToCollection();
+            }
+
+            var pager = collection.ToPagedList(page, SiteConst.PageSize);
+
             var model = new PagerLocaleViewModel<QuestionViewModel>
             {
                 Items = pager,
@@ -57,7 +67,8 @@ namespace EX.Web.Areas.Admin.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Form(int? id)
+
+        public async Task<IActionResult> Form(int? id) 
         {
             var model = new QuestionViewModel();
             var cultures = await _handbook.GetCultures();

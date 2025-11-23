@@ -1,0 +1,36 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["src/EX.Web/EX.Web.csproj", "EX.Web/"]
+COPY ["src/EX.Data/EX.Data.csproj", "EX.Data/"]
+COPY ["src/EX.Common/EX.Common.csproj", "EX.Common/"]
+
+# Restore dependencies
+RUN dotnet restore "EX.Web/EX.Web.csproj"
+
+# Copy all source files
+COPY src/ .
+
+# Build the application
+WORKDIR "/src/EX.Web"
+RUN dotnet build "EX.Web.csproj" -c Release -o /app/build
+
+# Publish stage
+FROM build AS publish
+RUN dotnet publish "EX.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+EXPOSE 10000
+
+# Copy published files
+COPY --from=publish /app/publish .
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:10000
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+ENTRYPOINT ["dotnet", "EX.Web.dll"]

@@ -1,0 +1,14 @@
+# Environment files
+.env
+
+# Logs
+logs/
+*.log
+
+# Backups
+backups/
+
+# Temporary files
+*.tmp
+*.swp
+*~

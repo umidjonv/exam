@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ex-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: EX
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_MAX_CONNECTIONS: 300
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ex-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ex-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ex-network
+
+  ex-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    container_name: ex-api
+    restart: unless-stopped
+    ports:
+      - "10001:10001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:10001
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=EX;Username=postgres;Password=12345;Maximum Pool Size=300
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ex-network
+    volumes:
+      - ./logs/api:/app/Logs
+
+  ex-web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    container_name: ex-web
+    restart: unless-stopped
+    ports:
+      - "10000:10000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:10000
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=EX;Username=postgres;Password=12345;Maximum Pool Size=300
+      - ApiUrls__ExamApi=http://ex-api:10001
+      - Redis__Configuration=redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ex-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - ex-network
+    volumes:
+      - ./logs/web:/app/Logs
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ex-network:
+    driver: bridge

@@ -1,0 +1,65 @@
+# Directories
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Files
+**/*.user
+**/*.suo
+**/*.cache
+**/.DS_Store
+**/Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+**/*.md
+!README.md
+
+# Docker
+**/docker-compose*
+**/Dockerfile*
+**/.dockerignore
+
+# Logs
+**/Logs/
+**/*.log
+
+# Node modules (if any frontend assets)
+**/node_modules/
+**/npm-debug.log
+
+# Environment files
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+
+# Build artifacts
+**/publish/
+**/dist/
+**/build/
+
+# IDE specific
+**/.idea/
+**/.vs/
+**/.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Temporary files
+**/temp/
+**/tmp/
+**/*.tmp

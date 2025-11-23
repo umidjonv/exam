@@ -1,0 +1,36 @@
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["src/EX.Api/EX.Api.csproj", "EX.Api/"]
+COPY ["src/EX.Data/EX.Data.csproj", "EX.Data/"]
+COPY ["src/EX.Common/EX.Common.csproj", "EX.Common/"]
+
+# Restore dependencies
+RUN dotnet restore "EX.Api/EX.Api.csproj"
+
+# Copy all source files
+COPY src/ .
+
+# Build the application
+WORKDIR "/src/EX.Api"
+RUN dotnet build "EX.Api.csproj" -c Release -o /app/build
+
+# Publish stage
+FROM build AS publish
+RUN dotnet publish "EX.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+EXPOSE 10001
+
+# Copy published files
+COPY --from=publish /app/publish .
+
+# Set environment variables
+ENV ASPNETCORE_URLS=http://+:10001
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+ENTRYPOINT ["dotnet", "EX.Api.dll"]

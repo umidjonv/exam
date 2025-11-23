@@ -21,6 +21,9 @@ RUN dotnet build "EX.Web.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "EX.Web.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+# Manually copy wwwroot folder (excluded from publish in .csproj)
+COPY src/EX.Web/wwwroot /app/publish/wwwroot
+
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
